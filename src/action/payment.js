@@ -165,7 +165,14 @@ class PaymentAction {
       return this._notification.display({ msg: 'Enter an invoice or address' });
     }
     if (await this.decodeInvoice({ invoice: this._store.payment.address })) {
-      this._nav.goPayLightningConfirm();
+      if (
+        this._store.payment.amount === '0' ||
+        this._store.payment.amount === 0
+      ) {
+        this._nav.goPayLightningSupplyAmount();
+      } else {
+        this._nav.goPayLightningConfirm();
+      }
     } else if (isAddress(this._store.payment.address)) {
       this._nav.goPayBitcoin();
     } else {
