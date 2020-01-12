@@ -302,6 +302,14 @@ describe('Action Payments Unit Tests', () => {
       expect(payment.decodeInvoice, 'was not called');
     });
 
+    it('should detect zero amount payment', async () => {
+      store.payment.address = 'some-address';
+      store.payment.amount = '0';
+      payment.decodeInvoice.resolves(true);
+      await payment.checkType();
+      expect(nav.goPayLightningSupplyAmount, 'was called once');
+    });
+
     it('should decode successfully', async () => {
       store.payment.address = 'some-address';
       payment.decodeInvoice.resolves(true);
