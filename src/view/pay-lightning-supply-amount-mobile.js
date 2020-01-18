@@ -4,17 +4,13 @@ import { observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import Background from '../component/background';
 import MainContent from '../component/main-content';
-import { NamedField } from '../component/field';
+import { NamedField, AmountInputField } from '../component/field';
 import { Header, Title } from '../component/header';
 import { CancelButton, BackButton, SmallGlasButton } from '../component/button';
 import Card from '../component/card';
 import LightningBoltIcon from '../asset/icon/lightning-bolt';
 import { FormStretcher } from '../component/form';
-import {
-  BalanceLabel,
-  BalanceLabelNumeral,
-  BalanceLabelUnit,
-} from '../component/label';
+import { BalanceLabel, BalanceLabelUnit } from '../component/label';
 import { color } from '../component/style';
 
 const styles = StyleSheet.create({
@@ -52,19 +48,19 @@ const PayLightningSupplyAmountView = ({ store, nav, payment }) => (
       <Card>
         <FormStretcher>
           <BalanceLabel style={styles.balance}>
-            <BalanceLabelNumeral style={styles.numeral}>
-              {store.paymentAmountLabel}
-            </BalanceLabelNumeral>
+            <AmountInputField
+              style={styles.amountInput}
+              autoFocus={true}
+              value={store.payment.amount}
+              onChangeText={amount => payment.setAmount({ amount })}
+              onSubmitEditing={() =>
+                payment.estimateLightningFeeForAmount(payment.amount)
+              }
+            />
             <BalanceLabelUnit style={styles.unit}>
-              {store.unitLabel}
+              {store.unitFiatLabel}
             </BalanceLabelUnit>
           </BalanceLabel>
-          <NamedField name="Fee">
-            {store.paymentFeeLabel} {store.unitLabel}
-          </NamedField>
-          <NamedField name="Total" style={styles.totalLbl}>
-            {store.paymentTotalLabel} {store.unitLabel}
-          </NamedField>
           {store.payment.note ? (
             <NamedField name="Note" style={styles.note}>
               {store.payment.note}
@@ -73,7 +69,7 @@ const PayLightningSupplyAmountView = ({ store, nav, payment }) => (
         </FormStretcher>
       </Card>
     </MainContent>
-    <SmallGlasButton onPress={() => payment.payLightning()}>
+    <SmallGlasButton onPress={() => nav.goPayLightningConfirm()}>
       Confirm
     </SmallGlasButton>
   </Background>
