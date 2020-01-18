@@ -209,6 +209,26 @@ class PaymentAction {
   /**
    * Estimate the lightning transaction fee using the queryRoutes grpc api
    * after which the fee is set in the store.
+   * @param  {number} options.satAmt      The amount to be payed in satoshis
+   * @return {Promise<undefined>}
+   */
+  async estimateLightningFeeForAmount({ amount }) {
+    try {
+      const request = await this._grpc.sendCommand('decodePayReq', {
+        payReq: this._store.payment.address,
+      });
+      this.estimateLightningFee({
+        destination: request.destination,
+        satAmt: toSatoshis(amount, this._store.settings),
+      });
+    } catch (err) {
+      log.info(`Estimating lightning fee failed!`, err);
+    }
+  }
+
+  /**
+   * Estimate the lightning transaction fee using the queryRoutes grpc api
+   * after which the fee is set in the store.
    * @param  {string} options.destination The lnd node that is to be payed
    * @param  {number} options.satAmt      The amount to be payed in satoshis
    * @return {Promise<undefined>}
@@ -328,7 +348,8 @@ class PaymentAction {
   }
 
   /**
-   * Send the amount specified in the invoice as a lightning transaction and
+   * Send the amount specified in the payment.amount. If zero use the amount
+   * specified in the invoice as a lightning transaction and
    * display the wait screen while the payment confirms.
    * This action can be called from a view event handler as does all
    * the necessary error handling and notification display.
@@ -343,6 +364,8 @@ class PaymentAction {
     try {
       this._nav.goWait();
       const invoice = this._store.payment.address;
+      const { settings } = this._store;
+      const satAmt = toSatoshis(this._store.payment.amount, settings);
       const stream = this._grpc.sendStreamCommand('sendPayment');
       await new Promise((resolve, reject) => {
         stream.on('data', data => {
@@ -353,7 +376,13 @@ class PaymentAction {
           }
         });
         stream.on('error', reject);
-        stream.write(JSON.stringify({ paymentRequest: invoice }), 'utf8');
+        stream.write(
+          JSON.stringify({
+            paymentRequest: invoice,
+            amt: satAmt,
+          }),
+          'utf8'
+        );
       });
       if (failed) return;
       this._nav.goPayLightningDone();
