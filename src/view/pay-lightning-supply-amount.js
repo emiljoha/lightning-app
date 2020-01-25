@@ -6,15 +6,10 @@ import Background from '../component/background';
 import MainContent from '../component/main-content';
 import { NamedField, AmountInputField } from '../component/field';
 import { Header, Title } from '../component/header';
-import {
-  MaxButton,
-  CancelButton,
-  BackButton,
-  PillButton,
-} from '../component/button';
+import { CancelButton, BackButton, PillButton } from '../component/button';
 import Card from '../component/card';
 import LightningBoltIcon from '../asset/icon/lightning-bolt';
-import { FormStretcher, FormText } from '../component/form';
+import { FormStretcher, FormSubText } from '../component/form';
 import { BalanceLabel, BalanceLabelUnit } from '../component/label';
 import { color } from '../component/style';
 
@@ -34,46 +29,48 @@ const styles = StyleSheet.create({
     marginTop: 20,
     backgroundColor: color.purple,
   },
+  subText: {
+    paddingTop: 20,
+    paddingBottom: 40,
+    paddingLeft: 40,
+    paddingRight: 40,
+  },
 });
 
 const PayLightningSupplyAmountView = ({ store, nav, payment }) => (
   <Background image="purple-gradient-bg">
     <Header color={color.purple}>
       <BackButton onPress={() => nav.goHome()} />
-      <Title title="Specify Amount to Send">
+      <Title title="Payment Request For Any Amount">
         <LightningBoltIcon height={12} width={6.1} />
       </Title>
       <CancelButton onPress={() => nav.goHome()} />
     </Header>
     <MainContent>
       <Card>
-        <FormText style={styles.description}>
-          The invoice did not specify an amount.
-        </FormText>
-        <FormStretcher>
-          <BalanceLabel style={styles.balance}>
-            <AmountInputField
-              autoFocus={true}
-              value={store.payment.amount}
-              onChangeText={amount => payment.setAmount({ amount })}
-              onSubmitEditing={() =>
-                payment.estimateLightningFeeForAmount(payment.amount)
-              }
-            />
-            <BalanceLabelUnit style={styles.unit}>
-              {store.unitFiatLabel}
-            </BalanceLabelUnit>
-          </BalanceLabel>
-          <MaxButton
-            style={styles.maxBtn}
-            active={store.payment.sendAll}
-            onPress={() => payment.toggleMax()}
+        <BalanceLabel style={styles.balance}>
+          <AmountInputField
+            autoFocus={true}
+            value={store.payment.amount}
+            onChangeText={amount => payment.setAmount({ amount })}
+            onSubmitEditing={() =>
+              payment.estimateLightningFeeForAmount(payment.amount)
+            }
           />
+          <BalanceLabelUnit style={styles.unit}>
+            {store.unitFiatLabel}
+          </BalanceLabelUnit>
+        </BalanceLabel>
+        <FormStretcher>
           {store.payment.note ? (
             <NamedField name="Note" style={styles.note}>
               {store.payment.note}
             </NamedField>
           ) : null}
+          <FormSubText style={styles.subText}>
+            Payment Request did not specify an amount. This is often used for
+            tips/donations.
+          </FormSubText>
         </FormStretcher>
         <PillButton
           style={styles.nextBtn}
