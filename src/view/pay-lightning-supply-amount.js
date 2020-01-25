@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
 });
 
 const PayLightningSupplyAmountView = ({ store, nav, payment }) => (
-  <Background color={color.purple}>
+  <Background image="purple-gradient-bg">
     <Header color={color.purple}>
       <BackButton onPress={() => nav.goHome()} />
       <Title title="Specify Amount to Send">
