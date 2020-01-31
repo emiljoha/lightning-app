@@ -47,7 +47,7 @@ const PayLightningSupplyAmountView = ({ store, nav, payment }) => (
             value={store.invoice.amount}
             onChangeText={amount => payment.setAmount({ amount })}
             onSubmitEditing={() =>
-              payment.estimateLightningFeeForAmount(payment.amount)
+              payment.checkAmountSuppliedAndGoPayLightningConfirm()
             }
           />
           <BalanceLabelUnit style={styles.unit}>
@@ -67,7 +67,9 @@ const PayLightningSupplyAmountView = ({ store, nav, payment }) => (
         </FormSubText>
       </Card>
     </MainContent>
-    <SmallGlasButton onPress={() => nav.goPayLightningConfirm()}>
+    <SmallGlasButton
+      onPress={() => payment.checkAmountSuppliedAndGoPayLightningConfirm()}
+    >
       Pay
     </SmallGlasButton>
   </Background>

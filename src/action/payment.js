@@ -169,6 +169,7 @@ class PaymentAction {
         this._store.payment.amount === '0' ||
         this._store.payment.amount === 0
       ) {
+        this._store.payment.amount = null;
         this._nav.goPayLightningSupplyAmount();
       } else {
         this._nav.goPayLightningConfirm();
@@ -177,6 +178,15 @@ class PaymentAction {
       this._nav.goPayBitcoin();
     } else {
       this._notification.display({ msg: 'Invalid invoice or address' });
+    }
+  }
+
+  async checkAmountSuppliedAndGoPayLightningConfirm() {
+    if (!this._store.payment.amount) {
+      return this._notification.display({ msg: 'Enter an invoice or address' });
+    } else {
+      this.reEstimateLightningFee();
+      this._nav.goPayLightningConfirm();
     }
   }
 
@@ -212,11 +222,12 @@ class PaymentAction {
    * @param  {number} options.satAmt      The amount to be payed in satoshis
    * @return {Promise<undefined>}
    */
-  async estimateLightningFeeForAmount({ amount }) {
+  async reEstimateLightningFee() {
     try {
       const request = await this._grpc.sendCommand('decodePayReq', {
         payReq: this._store.payment.address,
       });
+      const amount = this._store.payment.amount;
       this.estimateLightningFee({
         destination: request.destination,
         satAmt: toSatoshis(amount, this._store.settings),
