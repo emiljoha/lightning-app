@@ -181,6 +181,10 @@ class PaymentAction {
     }
   }
 
+  /**
+   * Check If payment amount was supplied and then re-estimate the routing fee
+   * and go to the confirmation view for lightning payments.
+   */
   async checkAmountSuppliedAndGoPayLightningConfirm() {
     if (!this._store.payment.amount) {
       return this._notification.display({ msg: 'Enter an invoice or address' });
