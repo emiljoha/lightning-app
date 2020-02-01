@@ -353,8 +353,7 @@ class PaymentAction {
   }
 
   /**
-   * Send the amount specified in the payment.amount. If zero use the amount
-   * specified in the invoice as a lightning transaction and
+   * Send the amount specified in payment.amount as a lightning transaction and
    * display the wait screen while the payment confirms.
    * This action can be called from a view event handler as does all
    * the necessary error handling and notification display.
