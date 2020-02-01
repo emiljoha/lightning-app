@@ -187,12 +187,12 @@ class PaymentAction {
    *       If payment amount is 0 the function will display a message and return.
    */
   async checkAmountSuppliedAndGoPayLightningConfirm() {
-    if (this._store.payment.amount === '0') {
-      this._notification.display({ msg: 'Enter amount to pay.' });
-    } else if (
-      this._store.payment.destination === '' ||
+    if (
+      this._store.payment.amount === '0' ||
       this._store.payment.amount === ''
     ) {
+      this._notification.display({ msg: 'Enter amount to pay.' });
+    } else if (this._store.payment.destination === '') {
       this._notification.display({ msg: 'Internal Error, try again.' });
       this._nav.goHome();
     } else {
