@@ -165,10 +165,7 @@ class PaymentAction {
       return this._notification.display({ msg: 'Enter an invoice or address' });
     }
     if (await this.decodeInvoice({ invoice: this._store.payment.address })) {
-      if (
-        this._store.payment.amount === '0' ||
-        this._store.payment.amount === 0
-      ) {
+      if (this._store.payment.amount === '0') {
         this._store.payment.amount = null;
         this._nav.goPayLightningSupplyAmount();
       } else {
