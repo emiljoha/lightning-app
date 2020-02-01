@@ -106,6 +106,7 @@ class PaymentAction {
    */
   init() {
     this._store.payment.address = '';
+    this._store.payment.destination = '';
     this._store.payment.amount = '';
     this._store.payment.targetConf = MED_TARGET_CONF;
     this._store.payment.fee = '';
@@ -166,7 +167,7 @@ class PaymentAction {
     }
     if (await this.decodeInvoice({ invoice: this._store.payment.address })) {
       if (this._store.payment.amount === '0') {
-        this._store.payment.amount = null;
+        this._store.payment.amount = '';
         this._nav.goPayLightningSupplyAmount();
       } else {
         this._nav.goPayLightningConfirm();
@@ -179,14 +180,26 @@ class PaymentAction {
   }
 
   /**
-   * Check If payment amount was supplied and then re-estimate the routing fee
-   * and go to the confirmation view for lightning payments.
+   * Check If payment amount was supplied and destination is set. Estimate
+   * the routing fee and go to the confirmation view for lightning payments.
+   *
+   * Note: This function is dependent on that an invoice has already been decoded.
+   *       If payment amount is 0 the function will display a message and return.
    */
   async checkAmountSuppliedAndGoPayLightningConfirm() {
-    if (!this._store.payment.amount) {
-      return this._notification.display({ msg: 'Enter an invoice or address' });
+    if (this._store.payment.amount === '0') {
+      this._notification.display({ msg: 'Enter amount to pay.' });
+    } else if (
+      this._store.payment.destination === '' ||
+      this._store.payment.amount === ''
+    ) {
+      this._notification.display({ msg: 'Internal Error, try again.' });
+      this._nav.goHome();
     } else {
-      this.reEstimateLightningFee();
+      this.estimateLightningFee({
+        destination: this._store.payment.destination,
+        satAmt: toSatoshis(this._store.payment.amount, this._store.settings),
+      });
       this._nav.goPayLightningConfirm();
     }
   }
@@ -206,6 +219,7 @@ class PaymentAction {
       });
       payment.amount = toAmount(request.numSatoshis, settings);
       payment.note = request.description;
+      payment.destination = request.destination;
       this.estimateLightningFee({
         destination: request.destination,
         satAmt: request.numSatoshis,
@@ -214,27 +228,6 @@ class PaymentAction {
     } catch (err) {
       log.info(`Decoding payment request failed: ${err.message}`);
       return false;
-    }
-  }
-
-  /**
-   * Estimate the lightning transaction fee using the queryRoutes grpc api
-   * after which the fee is set in the store.
-   * @param  {number} options.satAmt      The amount to be payed in satoshis
-   * @return {Promise<undefined>}
-   */
-  async reEstimateLightningFee() {
-    try {
-      const request = await this._grpc.sendCommand('decodePayReq', {
-        payReq: this._store.payment.address,
-      });
-      const amount = this._store.payment.amount;
-      this.estimateLightningFee({
-        destination: request.destination,
-        satAmt: toSatoshis(amount, this._store.settings),
-      });
-    } catch (err) {
-      log.info(`Estimating lightning fee failed!`, err);
     }
   }
 
